@@ -2,7 +2,7 @@
 
 **在目标机器上运行这些命令，把结果抄到纸上或存到外部介质。** 此后所有决策都以这里记录的值为准，而不是以本 skill 里的示例为准。
 
-> 示例章节里的数值来自作者 2026-10-15 在 Lenovo ThinkBook 14 G7+ IAH (21TK) 上的一次实测重装。它们**只对那台机器成立**。
+下列步骤要求你现场读取目标机器的数据；不要根据其他设备的记录推断。
 
 ## 事实 1 — 机型 / BIOS / 序列号
 
@@ -69,17 +69,9 @@ Get-CimInstance SoftwareLicensingProduct |
     Select-Object Name,LicenseStatus,LicenseFamily,Description
 ```
 
-- `LicenseStatus = 1` → 已激活；`OEM_DM` 表示绑主板数字许可证，同 SKU 重装后联网自动激活。
-- **下载的 ISO 必须精确匹配这里的 EditionID**。多版本 ISO 通常**不含**区域变体，挑最接近的那一项会导致联网激活失败。
-- 常见陷阱示例（作者机器 `CoreCountrySpecific`，即「家庭版 中国区变体」）：
-
-| 下载页下拉项 | 对应 SKU | 能否激活作者机器 |
-| --- | --- | --- |
-| 多版本 ISO | Core / CoreSingleLanguage / Professional 合集 | **不能** —— 不含 CoreCountrySpecific |
-| Windows 11 家庭版（仅限中国） | CoreCountrySpecific | **能** |
-| Windows 11 专业中文版本 | ProfessionalCountrySpecific | 不能，需另购授权 |
-
-密钥页选「我没有产品密钥」，联网后由数字许可证自动激活。
+- `LicenseStatus = 1` 表示当前显示为已许可。`OEM_DM` 常见于固件嵌入的 OEM 密钥；不要仅凭该字段推断可用版本或保证重装后自动激活。
+- 记录当前 Windows 版本，并选择与许可相符的官方安装介质。区域版 SKU 和下载选项可能不同；不要选择“最接近”的版本，也不要假设多版本 ISO 一定包含当前许可对应的版本。
+- 若安装程序提供「我没有产品密钥」选项，可跳过输入步骤；联网后通常会自动激活，但具体结果取决于许可、版本和设备状态。参阅 [Microsoft 重装说明](https://support.microsoft.com/en-us/windows/deployment/install-upgrade/reinstall-windows-with-the-installation-media)（核对日期：2026-10-24）。
 
 ## 事实 6 — 网卡型号（决定预下载哪些驱动）
 
@@ -87,7 +79,7 @@ Get-CimInstance SoftwareLicensingProduct |
 Get-NetAdapter | Select-Object Name,InterfaceDescription,Status,LinkSpeed
 ```
 
-把无线和有线两条的型号抄下来（例如 Intel Wi-Fi 7 BE200、Intel Ethernet I219-V），去 Intel 下载中心 / 厂商支持站各下一份离线包放进 U 盘 `Drivers\`。**这是「装完能不能联网」的前提。**
+把无线和有线网卡的型号抄下来，去芯片厂商或整机厂官方支持站下载对应离线驱动，放进 U 盘 `Drivers\`。**这是「装完能不能联网」的前提。**
 
 ## 事实 7 — SSH 私钥与 Git 身份（⚠️ 不要照搬别人的结论）
 
@@ -96,8 +88,7 @@ Get-ChildItem $env:USERPROFILE\.ssh -Force -ErrorAction SilentlyContinue
 git config --global --list
 ```
 
-- **作者那台机器恰好只有 `known_hosts`、没有私钥**，所以当时判定「重装后重新生成即可」。
-- **这个结论不能推广。** 若你的 `.ssh` 里有 `id_ed25519`/`id_rsa`，它们必须随 P0 备份，丢了就要重新给所有服务器配公钥。
+- 如果 `.ssh` 里有 `id_ed25519`/`id_rsa`，将私钥纳入 P0 备份；丢失后需要重新给相关服务器配置公钥。
 - 顺手记下 Git 身份，丢了可以两行重建（填你自己的值）：
 
 ```bash
@@ -116,17 +107,6 @@ Confirm-SecureBootUEFI        # 需管理员 PowerShell，返回 True 表示已�
 
 ---
 
-## 示例：作者机器实测值（**不可照抄**）
+## 记录模板
 
-| 事实 | 作者机器 | 备注 |
-| --- | --- | --- |
-| 机型 | Lenovo ThinkBook 14 G7+ IAH (21TK)，BIOS R6CN24WW | 序列号属个人信息，未写入本 skill |
-| CPU / GPU / RAM | Core Ultra 5 225H / Intel Arc 130T (16GB) / 31.5 GB | — |
-| 磁盘 | 单块 YMTC NVMe 954 GB | 标准 NVMe，**无 VMD** → 无需注入驱动 |
-| 分区 | 系统 `Windows-SSD` ~500 GB ／ 数据 `Data` ~451.6 GB | 这两个数字只对这台机器成立 |
-| 加密 | 无 BitLocker、无设备加密 | 无需恢复密钥 |
-| SKU | `CoreCountrySpecific` | 必须用「家庭版（仅限中国）」单版 ISO |
-| 网卡 | Intel Wi-Fi 7 BE200 320MHz ／ Intel I219-V | 两者都预下载了离线包 |
-| 凭据 | 无 SSH 私钥；Git 身份另行记录 | **作者机器特例，不代表你的机器** |
-| 结果 | Build 26300.9711，数字许可证自动激活，数据盘完好 | — |
-| 遗留缺陷 | Safe Boot 装完未恢复（曾为 `UEFISecureBootEnabled=0`） | 记为教训：装完必须回头恢复 |
+把命令结果记录在你自己的安全位置；不要把序列号、恢复密钥、私钥或账号信息贴进共享 skill、公开仓库或聊天记录。

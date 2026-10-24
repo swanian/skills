@@ -39,14 +39,14 @@ Rufus 须设 **GPT / UEFI（非 CSM 或 BIOS）/ NTFS**，切勿选「Windows To
 
 ## 介质与驱动清单
 
-**驱动项请替换为 Step 0 事实 6 里你自己查到的网卡与机型**，下面仅为示例。
+**驱动项请替换为 Step 0 事实 6 里你自己查到的设备与机型**，下表是通用清单。
 | --- | --- | --- |
 | U 盘 | ≥ 8 GB，内容会被清空 | 用官方 Media Creation Tool 制作，或官方 ISO + Rufus 写入 |
-| 无线驱动 | Intel Wi-Fi 7 BE200 驱动包 | **必下**：装完能否联网的前提 |
-| 有线驱动 | Intel Ethernet I219-V 驱动包 | **必下**：无线失效时的兜底联网路径 |
-| 音频驱动 | 联想音频包（Realtek + Dolby + Elevoc） | **必下**：B 类 8 项靠它一次性补齐 |
-| 显卡驱动 | Intel Arc 130T（联想 21TK 定制版优先） | Windows Update 会推通用版；用定制版则需阻止 WU 覆盖 |
-| 厂商驱动 | Lenovo Vantage / 热键 / 电源管理 | 联网后装 Vantage 自动补齐 |
+| 无线驱动 | 目标机器无线网卡的厂商驱动 | **必下**：装完能否联网的前提 |
+| 有线驱动 | 目标机器有线网卡的厂商驱动 | **建议准备**：无线失效时的兜底联网路径 |
+| 音频驱动 | 整机厂提供的音频驱动包（如适用） | 按设备与厂商说明决定是否需要 |
+| 显卡驱动 | 目标机器显卡的厂商驱动 | Windows Update 可能提供通用版；如需定制版，按厂商说明安装 |
+| 厂商驱动 | 目标机器的热键、电源管理等支持软件 | 联网后从整机厂官方支持站获取 |
 
 ## 三条环境提醒
 
@@ -56,5 +56,5 @@ Rufus 须设 **GPT / UEFI（非 CSM 或 BIOS）/ NTFS**，切勿选「Windows To
 (Get-CimInstance Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard).VirtualizationBasedSecurityStatus
 ```
 
-- **企业授权**：机器上若装有企业 VPN、VDI 客户端、设备管控等企业组件（如 iNode、Horizon Client、企业 IM），**先向 IT 确认能否提供专业版授权与重装所需的审批流程**，不要自行下载安装包绕过管控——这类软件往往本身就应当由 IT 分发。
-- **若要上专业版**：先用「家庭版（仅限中国）」装好并自动激活，再走 设置 → 系统 → 激活 → 升级你的 Windows 版本 → 打开商店（有 25 位 Pro 密钥则直接「更改产品密钥」）。升级在线完成不重装，Pro 许可证会绑主板+微软账号，此后重装可直接用「专业中文版本」ISO 自动激活。**不要跳过先激活家庭版这一步**；中国区 CoreCountrySpecific 在商店是否有 Pro 升级入口需自验，若无则只能走 25 位密钥。
+- **企业授权**：机器上若装有企业 VPN、VDI 客户端、设备管控等企业组件，**先向 IT 确认能否提供专业版授权与重装所需的审批流程**，不要自行下载安装包绕过管控——这类软件往往本身就应当由 IT 分发。
+- **Windows 版本与许可**：选择与你的现有许可相符的 Windows 版本。升级资格、购买路径和激活条件因设备、地区与许可类型而异；按 Microsoft 当前说明核实，不要假设升级会自动绑定特定硬件或账号。参阅 [Microsoft 重装说明](https://support.microsoft.com/en-us/windows/deployment/install-upgrade/reinstall-windows-with-the-installation-media) 与 [激活说明](https://support.microsoft.com/en-us/windows/activation/activate-windows)（核对日期：2026-10-24）。
