@@ -10,7 +10,7 @@ agent_created: true
 
 A self-contained five-stage methodology for wiping and reinstalling Windows 11 without losing data. It depends on **no local files** — every machine-specific fact is discovered at runtime with commands given below and in `references/01-preflight.md`.
 
-A worked example is included from a verified 2026-10-15 reinstall of a Lenovo ThinkBook 14 G7+ IAH (21TK). **That example is a record of one machine, not a template.** Its concrete values — partition sizes, SKU, driver names, software list — apply to that machine only. Copying them onto another machine is how data gets lost.
+Use only the target machine's live pre-flight results. Any examples are illustrative and must never replace those results.
 
 ## Mandatory Intake — Confirm Two Lists Before Acting
 
@@ -33,7 +33,7 @@ Present the tiering template in `references/02-backup.md` as a starting point, t
 
 Present the template in `references/05-restore.md` and ask for confirmations, additions, and removals.
 
-- Make clear the bundled list is **the original author's preference**, not a recommendation for everyone.
+- Make clear the bundled list is **a sample preference list**, not a recommendation for everyone.
 - Split the list into "installers that can be fetched now" versus "items needing an account or IT approval", so the user knows what requires advance coordination.
 - Re-verify versioned direct links against the vendor page at install time; never trust a stale version number.
 - Record any deliberate exclusions so nothing on it gets installed by accident later.
@@ -58,10 +58,10 @@ If the user answers "just use the default", restate the full default list explic
 ## Critical Red Lines
 
 1. **Partition selection** — Identify partitions **by capacity and volume label taken from your own Step 0 snapshot, never by index and never from this skill's example**. Delete only the partition you recorded as the system partition; **never delete or format** the one recorded as data; leave EFI (100–260 MB), MSR (16 MB), and WinRE (0.5–1 GB) alone.
-2. **SKU must match your own machine** — Check `(Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\NT\CurrentVersion).EditionID` and download the ISO whose SKU matches it exactly. A multi-edition ISO usually does **not** contain region-specific variants. Worked example of this trap: the author's `CoreCountrySpecific` (Home China variant) is absent from multi-edition media, so installing «Home» from it yields plain `Core` and online activation fails against the board-bound license.
-3. **BitLocker before anything else** — If any volume is encrypted, export the recovery key first. The author's machine had no BitLocker, which made step 4 safe *there*; never assume it — check with `manage-bde -status`.
+2. **Edition must match your license** — Check the installed Windows edition and use installation media for the edition covered by your license. Microsoft says the reinstalled edition must match the digital license; activation is usually automatic after going online, but may require troubleshooting. See [Microsoft's reinstall guidance](https://support.microsoft.com/en-us/windows/deployment/install-upgrade/reinstall-windows-with-the-installation-media) and [activation guidance](https://support.microsoft.com/en-us/windows/activation/activate-windows) (checked 2026-10-24). Edition availability varies by region and media; verify the current official download options before proceeding.
+3. **BitLocker before anything else** — If any volume is encrypted, export the recovery key first. Never assume encryption is off; check with `manage-bde -status`.
 4. **External backup is mandatory** — Backing up to another partition on the same physical disk is a mirror, not a backup. Export, verify, then copy the artifacts to external media before installing.
-5. **Credentials and keys** — Check `~/.ssh` yourself. The author's machine happened to hold only `known_hosts`, which is why it was treated as disposable; a colleague's machine may hold `id_ed25519`. Back up whatever is actually there.
+5. **Credentials and keys** — Check `~/.ssh` yourself. Back up any private keys you find there, including `id_ed25519` or `id_rsa`.
 6. **Official media only** — Never use third-party Ghost / trimmed / pre-activated images.
 7. **Mains power throughout** — Power loss mid-install can corrupt the partition table.
 8. **Network drivers must exist offline** — There is a deadlock: without a NIC driver there is no network, and without network Windows Update cannot fetch any driver, so every later step stalls. Before installing, put the adapters' drivers in at least one offline location — export the current driver store to the data partition with `pnputil /export-driver`, and/or pre-download the vendor packages to a `Drivers\` folder on the USB stick.
@@ -149,29 +149,14 @@ Drivers first, because everything else needs network.
 
 Because there is no bulk unattended install, cross-check the finished machine against `installed-software.txt` so nothing needed is missed.
 
-## Worked Example — Lenovo ThinkBook 14 G7+ IAH (21TK), verified 2026-10-15
-
-Reference values only for that one machine. Nothing here transfers to different hardware.
-
-| Item | That machine's value |
-| --- | --- |
-| Disk | Single YMTC NVMe 954 GB, standard NVMe controller (no VMD → no driver injection needed) |
-| Partitions | System `Windows-SSD` ~500 GB (wiped) / data `Data` ~451.6 GB (preserved) |
-| Encryption | None → no recovery key needed |
-| SKU | `CoreCountrySpecific` → needed the single-edition "家庭版（仅限中国）" ISO |
-| Result | Build 26300.9711, auto-activated via digital license, data partition intact |
-| Leftover defect | Secure Boot was left disabled (`UEFISecureBootEnabled=0`) — repaired to restore only after re-enabling |
-
-Full breakdown, including the 61-device driver classification for that model: `references/01-preflight.md` and `references/04-drivers.md`.
-
 ## Reference Files
 
 | File | Contents |
 | --- | --- |
-| `references/01-preflight.md` | The eight pre-flight facts with the exact commands to discover each on **your** machine; the author's values as example |
+| `references/01-preflight.md` | The eight pre-flight facts with commands to discover each on **your** machine |
 | `references/02-backup.md` | P0/P1/P2 tiering, mandatory external-copy ordering, essential export/backup commands, verification procedure |
-| `references/03-install-media.md` | Official download paths, Rufus settings, why the ISO link cannot be scripted, media and driver checklist |
-| `references/04-drivers.md` | A/B/C driver triage method, `pnputil` export/import, and the author's 61-device breakdown as example |
-| `references/05-restore.md` | Installer-by-download restore method, verified direct links (2026-10-16), install order, author's software preference example |
-| `references/06-risks.md` | Risk register with mitigations, lessons actually learned, time budget |
-| `references/07-bios.md` | F1/F12 key purposes and fallbacks, Secure Boot policy, toggle path and verification commands |
+| `references/03-install-media.md` | Official download paths, Rufus settings, media and driver checklist |
+| `references/04-drivers.md` | A/B/C driver triage method and `pnputil` export/import |
+| `references/05-restore.md` | Installer-by-download restore method, example download sources, and install order |
+| `references/06-risks.md` | Risk register with mitigations and a planning time budget |
+| `references/07-bios.md` | Common startup-key functions, Secure Boot guidance, and verification commands |
