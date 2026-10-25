@@ -72,7 +72,6 @@ Get-CimInstance SoftwareLicensingProduct |
 - `LicenseStatus = 1` 表示当前显示为已许可。`OEM_DM` 常见于固件嵌入的 OEM 密钥；不要仅凭该字段推断可用版本或保证重装后自动激活。
 - 记录当前 Windows 版本，并选择与许可相符的官方安装介质。区域版 SKU 和下载选项可能不同；不要选择“最接近”的版本，也不要假设多版本 ISO 一定包含当前许可对应的版本。
 - 若安装程序提供「我没有产品密钥」选项，可跳过输入步骤；联网后通常会自动激活，但具体结果取决于许可、版本和设备状态。参阅 [Microsoft 重装说明](https://support.microsoft.com/en-us/windows/deployment/install-upgrade/reinstall-windows-with-the-installation-media)（核对日期：2026-10-24）。
-
 ## 事实 6 — 网卡型号（决定预下载哪些驱动）
 
 ```powershell
